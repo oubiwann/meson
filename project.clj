@@ -22,11 +22,12 @@
       :cluster-deployment :local
       :cluster-type :docker
       :docker {
-        :container-id-file "/tmp/meson-mesos-container-id"
-        :image-name "clojusc/mesos:1.0.1"
+        :container-name "meson-mesos"
+        :image-name "mesos/mesos-mini:1.9.x"
         :master "localhost:5050"
         :agent "localhost:5051"
-        :port-mappings "5050-5051:5050-5051"}}}
+        :mesos-ports "5050-5051:5050-5051"
+        :marathon-ports "8080:8080"}}}
   :profiles {
     :uberjar {
       :aot :all}

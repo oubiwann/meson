@@ -1,6 +1,5 @@
 (ns meson.config
-  (:require [leiningen.core.project :as project]
-            [taoensso.timbre :as log])
+  (:require [leiningen.core.project :as project])
   (:refer-clojure :exclude [name]))
 
 (def all (project/read))
@@ -23,11 +22,13 @@
 
 (def docker (:docker mesos))
 
-(def docker-container-id-file (:container-id-file docker))
+(def docker-container-name (:container-name docker))
 
 (def docker-image-name (:image-name docker))
 
-(def docker-port-mappings (:port-mappings docker))
+(def docker-mesos-ports (:mesos-ports docker))
+
+(def docker-marathon-ports (:marathon-ports docker))
 
 (def docker-agent (:agent docker))
 

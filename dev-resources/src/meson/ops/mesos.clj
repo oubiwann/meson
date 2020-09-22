@@ -1,6 +1,5 @@
 (ns meson.ops.mesos
-  (:require [clojure.pprint :refer [pprint]]
-            [meson.config :as config]
+  (:require [meson.config :as config]
             [meson.util.shell :as util]
             [taoensso.timbre :as log]
             [trifl.docs :as docs]))
@@ -18,11 +17,12 @@
   []
   (log/info "Starting local docker cluster ...")
   (log/debugf "Using image '%s'" config/docker-image-name)
-  (util/shellf-silent "rm -f %s" config/docker-container-id-file)
+  (util/shellf-silent "rm -f %s" config/docker-container-name)
   (util/shellf "docker pull %s" config/docker-image-name)
-  (util/shellf-silent "docker run -d --cidfile %s --publish %s %s"
-                      config/docker-container-id-file
-                      config/docker-port-mappings
+  (util/shellf-silent "docker run --detach --privileged --publish %s --publish %s --name %s %s"
+                      config/docker-mesos-ports
+                      config/docker-marathon-ports
+                      config/docker-container-name
                       config/docker-image-name)
   (log/info "Done."))
 
@@ -30,7 +30,7 @@
   ""
   []
   (log/info "Stoping local docker cluster ...")
-  (let [id (util/shellf-silent "cat %s" config/docker-container-id-file)]
+  (let [id config/docker-container-name]
     (util/shellf-silent "docker stop %s" id))
   (log/info "Done."))
 
@@ -45,11 +45,11 @@
   []
   (log/warn "Note that clojure.java.shell doesn't directly support TTY"
             "connections.")
-  (let [id (util/shellf-silent "cat %s" config/docker-container-id-file)]
+  (let [id config/docker-container-name]
     (log/info
-      (format (str "To connect to the running docker container, execute the "
-                   "following:\n\n docker exec -it %s bash\n")
-               id))))
+     (format (str "To connect to the running docker container, execute the "
+                  "following:\n\n docker exec -it %s bash\n")
+             id))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Dispatch Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -100,14 +100,14 @@
     connect   Get command to connect to running Docker container
   ```"
   ([]
-    (docs/print-docstring #'run))
+   (docs/print-docstring #'run))
   ([[subcmd & args]]
-    (log/trace "Got subcmd:" subcmd)
-    (log/trace "Got args:" args)
-    (case (keyword subcmd)
-      nil (docs/print-docstring #'run)
-      :start (start)
-      :stop (stop)
-      :restart (restart)
-      :connect (connect)
-      :help (docs/print-docstring #'run))))
+   (log/trace "Got subcmd:" subcmd)
+   (log/trace "Got args:" args)
+   (case (keyword subcmd)
+     nil (docs/print-docstring #'run)
+     :start (start)
+     :stop (stop)
+     :restart (restart)
+     :connect (connect)
+     :help (docs/print-docstring #'run))))
